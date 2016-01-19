@@ -1,4 +1,4 @@
-FROM debian:wheezy
+FROM phusion/baseimage:0.9.15
 MAINTAINER Richard Fullmer <richardfullmer@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -10,34 +10,36 @@ ENV APACHE_RUN_DIR      /var/run/apache2
 ENV APACHE_LOCK_DIR     /var/lock/apache2
 ENV APACHE_LOG_DIR      /var/log/apache2
 
-RUN apt-get update -y && apt-get install -y curl 
+# Upgrade for PHP 5.6
+# note: triggers non-fatal error due to non-ASCII characters in repo name
+#       (gpg: key E5267A6C: public key "Launchpad PPA for Ond\xc5\x99ej Sur�" imported)
+# You can safely ignore that error
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C \
+ && add-apt-repository -y ppa:ondrej/php5-5.6 \
+ && apt-key update \
+ && apt-get update -y
 
-# Add php55 dotdeb
-RUN echo "deb http://packages.dotdeb.org wheezy all" | tee /etc/apt/sources.list.d/dotdeb.list
-RUN echo "deb-src http://packages.dotdeb.org wheezy all" | tee -a /etc/apt/sources.list.d/dotdeb.list
-RUN echo "deb http://packages.dotdeb.org wheezy-php55 all" | tee -a /etc/apt/sources.list.d/dotdeb.list
-RUN echo "deb-src http://packages.dotdeb.org wheezy-php55 all" | tee -a /etc/apt/sources.list.d/dotdeb.list
-RUN curl -s http://www.dotdeb.org/dotdeb.gpg | apt-key add -
+# install curl
+RUN apt-get install -y curl
 
 # install PHP
-RUN apt-get update && apt-get install -y --force-yes php5 apache2 libapache2-mod-php5 php5-pgsql php5-json php5-xsl php5-intl php5-mcrypt \
-	php5-gd php5-curl php5-memcached
+RUN apt-get install -y --force-yes \
+    php5 apache2 libapache2-mod-php5 php5-pgsql php5-json php5-xsl \
+	php5-intl php5-mcrypt php5-gd php5-curl php5-memcached
 
 # apt clean
 RUN apt-get clean & rm -rf /var/lib/apt/lists/*
 
+# enable apache modules
 RUN a2enmod rewrite ssl headers php5
 
 # install composer
-RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php \
+ && mv composer.phar /usr/local/bin/composer
 
-RUN rm /etc/apache2/sites-available/default
 ADD 000-default.conf /etc/apache2/sites-available/default
+ADD phpinfo.php /var/www/html/phpinfo.php
 
-# Fix issue with SSLMutex - https://github.com/yankcrime/dockerfiles/issues/3
-RUN mkdir /var/run/apache2
-
-ADD phpinfo.php /var/www/phpinfo.php
 
 EXPOSE 80 443
 
