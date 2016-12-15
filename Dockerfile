@@ -15,7 +15,7 @@ ENV APACHE_LOG_DIR      /var/log/apache2
 #       (gpg: key E5267A6C: public key "Launchpad PPA for Ond\xc5\x99ej Sur�" imported)
 # You can safely ignore that error
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C \
- && add-apt-repository -y ppa:ondrej/php5-5.6 \
+ && add-apt-repository -y ppa:ondrej/php \
  && apt-key update \
  && apt-get update -y
 
