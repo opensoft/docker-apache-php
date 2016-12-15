@@ -24,8 +24,8 @@ RUN apt-get install -y curl
 
 # install PHP
 RUN apt-get install -y --force-yes \
-    php5 apache2 libapache2-mod-php5 php5-pgsql php5-json php5-xsl \
-	php5-intl php5-mcrypt php5-gd php5-curl php5-memcached
+    php5.6 apache2 libapache2-mod-php5 php5.6-pgsql php5.6-json php5.6-xsl \
+	php5.6-intl php5.6-mcrypt php5.6-gd php5.6-curl php5.6-memcached php5.6-bcmath php5.6-mbstring
 
 # apt clean
 RUN apt-get clean & rm -rf /var/lib/apt/lists/*
